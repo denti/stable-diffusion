@@ -157,7 +157,7 @@ def run():
     
     sampler = initialize_model(sys.argv[1], sys.argv[2])
 
-    image = st.file_uploader("Image", ["jpg", "png"])
+    image = st.file_uploader("Image", ["jpg", "jpeg", "png"])
     if image:
         image = Image.open(image)
         w, h = image.size
@@ -200,7 +200,7 @@ def run():
             drawing_mode=drawing_mode,
             key="canvas",
         )
-        if canvas_result:
+        if canvas_result.image_data is not None:
             mask = canvas_result.image_data
             mask = mask[:, :, -1] > 0
             if mask.sum() > 0:
