@@ -46,6 +46,7 @@ def put_watermark(img):
     return img
 
 def check_safety(x_image):
+    return x_image, False
     safety_checker_input = safety_feature_extractor(numpy_to_pil(x_image), return_tensors="pt")
     x_checked_image, has_nsfw_concept = safety_checker(images=x_image, clip_input=safety_checker_input.pixel_values)
     assert x_checked_image.shape[0] == len(has_nsfw_concept)
@@ -97,7 +98,6 @@ def make_batch_sd(
 def inpaint(sampler, image, mask, prompt, seed, scale, ddim_steps, num_samples=1, w=512, h=512):
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     model = sampler.model
-
     prng = np.random.RandomState(seed)
     start_code = prng.randn(num_samples, 4, h//8, w//8)
     start_code = torch.from_numpy(start_code).to(device=device, dtype=torch.float32)
@@ -148,7 +148,7 @@ def inpaint(sampler, image, mask, prompt, seed, scale, ddim_steps, num_samples=1
             result = result*255
 
     result = [Image.fromarray(img.astype(np.uint8)) for img in result]
-    result = [put_watermark(img) for img in result]
+    # result = [put_watermark(img) for img in result]
     return result
 
 
@@ -202,6 +202,7 @@ def run():
         )
         if canvas_result.image_data is not None:
             mask = canvas_result.image_data
+            # print(mask, mask.dtype, mask.shape, sum(mask[:,:,0]), sum(mask[:,:,1]), sum(mask[:,:,2]), sum(mask[:,:,3]),)
             mask = mask[:, :, -1] > 0
             if mask.sum() > 0:
                 mask = Image.fromarray(mask)
